@@ -38,8 +38,9 @@ def main():
     
 
 def uniform_cost(initial, empty_loc):
-    initial_state = puzzleState(initial, None, 0, 0, empty_loc)
+    initial_state = puzzleState(initial, 0, 0, empty_loc)
     min_que = []
+    visited = []
     heapq.heapify(min_que)
     heapq.heappush(min_que, initial_state)
     
@@ -52,6 +53,8 @@ def uniform_cost(initial, empty_loc):
             break
         
         current = heapq.heappop(min_que)
+        temp = [row[:] for row in current.state]
+        visited.append(temp)
         print("The puzzle state to be expanded:")
         print_puzzle(current.state)
         print("g(n) is " + str(current.g_n))
@@ -66,22 +69,32 @@ def uniform_cost(initial, empty_loc):
         count += 1
 
         #Expand the legal and non-repeating states
-        if current.empty_loc[0] > 0 and (current.parent == None or current.empty_loc[0] - 1 != current.parent.empty_loc[0]):
-            heapq.heappush(min_que, puzzleState(move_up(current.state, current.empty_loc), current, current.g_n + 1, 0, move_up_empty(current.empty_loc)))
+        if current.empty_loc[0] > 0:
+            new_state = move_up(current.state, current.empty_loc)
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, 0, move_up_empty(current.empty_loc)))
            
-        if current.empty_loc[1] > 0 and (current.parent == None or current.empty_loc[1] - 1 != current.parent.empty_loc[1]):
-            heapq.heappush(min_que, puzzleState(move_left(current.state, current.empty_loc), current, current.g_n + 1, 0, move_left_empty(current.empty_loc)))
+        if current.empty_loc[1] > 0:
+            new_state = move_left(current.state, current.empty_loc)
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, 0, move_left_empty(current.empty_loc)))
         
-        if current.empty_loc[0] < len(current.state) - 1 and (current.parent == None or current.empty_loc[0] + 1 != current.parent.empty_loc[0]):
-            heapq.heappush(min_que, puzzleState(move_down(current.state, current.empty_loc), current, current.g_n + 1, 0, move_down_empty(current.empty_loc)))
+        if current.empty_loc[0] < len(current.state) - 1:
+            new_state = move_down(current.state, current.empty_loc)
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, 0, move_down_empty(current.empty_loc)))
             
-        if current.empty_loc[1] < len(current.state[0]) - 1 and (current.parent == None or current.empty_loc[1] + 1 != current.parent.empty_loc[1]):
-            heapq.heappush(min_que, puzzleState(move_right(current.state, current.empty_loc), current, current.g_n + 1, 0, move_right_empty(current.empty_loc)))
+        if current.empty_loc[1] < len(current.state[0]) - 1:
+            new_state = move_right(current.state, current.empty_loc)
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, 0, move_right_empty(current.empty_loc)))
+                
     
 
 def misplaced(initial, empty_loc):
-    initial_state = puzzleState(initial, None, 0, misplaced_count(initial), empty_loc)
+    initial_state = puzzleState(initial, 0, misplaced_count(initial), empty_loc)
     min_que = []
+    visited = []
     heapq.heapify(min_que)
     heapq.heappush(min_que, initial_state)
     
@@ -94,6 +107,8 @@ def misplaced(initial, empty_loc):
             break
         
         current = heapq.heappop(min_que)
+        temp = [row[:] for row in current.state]
+        visited.append(temp)
         
         print("The puzzle state to be expanded:")
         print_puzzle(current.state)
@@ -110,25 +125,30 @@ def misplaced(initial, empty_loc):
         count += 1
 
         #Expand the legal and non-repeating states
-        if current.empty_loc[0] > 0 and (current.parent == None or current.empty_loc[0] - 1 != current.parent.empty_loc[0]):
+        if current.empty_loc[0] > 0:
             new_state = move_up(current.state, current.empty_loc)
-            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_up_empty(current.empty_loc)))
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, misplaced_count(new_state), move_up_empty(current.empty_loc)))
            
-        if current.empty_loc[1] > 0 and (current.parent == None or current.empty_loc[1] - 1 != current.parent.empty_loc[1]):
+        if current.empty_loc[1] > 0:
             new_state = move_left(current.state, current.empty_loc)
-            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_left_empty(current.empty_loc)))
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, misplaced_count(new_state), move_left_empty(current.empty_loc)))
         
-        if current.empty_loc[0] < len(current.state) - 1 and (current.parent == None or current.empty_loc[0] + 1 != current.parent.empty_loc[0]):
+        if current.empty_loc[0] < len(current.state) - 1:
             new_state = move_down(current.state, current.empty_loc)
-            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_down_empty(current.empty_loc)))
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, misplaced_count(new_state), move_down_empty(current.empty_loc)))
             
-        if current.empty_loc[1] < len(current.state[0]) - 1 and (current.parent == None or current.empty_loc[1] + 1 != current.parent.empty_loc[1]):
+        if current.empty_loc[1] < len(current.state[0]) - 1:
             new_state = move_right(current.state, current.empty_loc)
-            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_right_empty(current.empty_loc)))
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, misplaced_count(new_state), move_right_empty(current.empty_loc)))
 
 def manhattan(initial, empty_loc):
-    initial_state = puzzleState(initial, None, 0, manhattan_distance(initial), empty_loc)
+    initial_state = puzzleState(initial, 0, manhattan_distance(initial), empty_loc)
     min_que = []
+    visited = []
     heapq.heapify(min_que)
     heapq.heappush(min_que, initial_state)
     
@@ -141,6 +161,8 @@ def manhattan(initial, empty_loc):
             break
         
         current = heapq.heappop(min_que)
+        temp = [row[:] for row in current.state]
+        visited.append(temp)
         
         print("The puzzle state to be expanded:")
         print_puzzle(current.state)
@@ -157,21 +179,25 @@ def manhattan(initial, empty_loc):
         count += 1
 
         #Expand the legal and non-repeating states
-        if current.empty_loc[0] > 0 and (current.parent == None or current.empty_loc[0] - 1 != current.parent.empty_loc[0]):
+        if current.empty_loc[0] > 0:
             new_state = move_up(current.state, current.empty_loc)
-            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, manhattan_distance(new_state), move_up_empty(current.empty_loc)))
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, manhattan_distance(new_state), move_up_empty(current.empty_loc)))
            
-        if current.empty_loc[1] > 0 and (current.parent == None or current.empty_loc[1] - 1 != current.parent.empty_loc[1]):
+        if current.empty_loc[1] > 0:
             new_state = move_left(current.state, current.empty_loc)
-            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, manhattan_distance(new_state), move_left_empty(current.empty_loc)))
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, manhattan_distance(new_state), move_left_empty(current.empty_loc)))
         
-        if current.empty_loc[0] < len(current.state) - 1 and (current.parent == None or current.empty_loc[0] + 1 != current.parent.empty_loc[0]):
+        if current.empty_loc[0] < len(current.state) - 1:
             new_state = move_down(current.state, current.empty_loc)
-            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, manhattan_distance(new_state), move_down_empty(current.empty_loc)))
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, manhattan_distance(new_state), move_down_empty(current.empty_loc)))
             
-        if current.empty_loc[1] < len(current.state[0]) - 1 and (current.parent == None or current.empty_loc[1] + 1 != current.parent.empty_loc[1]):
+        if current.empty_loc[1] < len(current.state[0]) - 1:
             new_state = move_right(current.state, current.empty_loc)
-            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, manhattan_distance(new_state), move_right_empty(current.empty_loc)))
+            if not checkVisited(visited, new_state):
+                heapq.heappush(min_que, puzzleState(new_state[:], current.g_n + 1, manhattan_distance(new_state), move_right_empty(current.empty_loc)))
     
 #Create a new state where empty tile switch with the tile above it
 def move_up(state, empty_loc):
@@ -217,7 +243,7 @@ def move_down_empty(empty_loc):
 
 #Create a new state where empty tile switch with the tile to its right
 def move_right(state, empty_loc):
-    temp = state[:]
+    temp = [row[:] for row in state]
     temp[empty_loc[0]][empty_loc[1]] = temp[empty_loc[0]][empty_loc[1] + 1]
     temp[empty_loc[0]][empty_loc[1] + 1] = '0'
     
@@ -271,16 +297,21 @@ def manhattan_distance(puzzle):
     
     return count
 
+#check if it is visited
+def checkVisited(li, puzzle):
+    for i in range(len(li)):
+        if puzzle == li[i]:
+            return True
+    return False
+
 #Puzzle state class
 #State -> store the current puzzle
-#parent -> store previous state for non-repeating expansion
 #g_n -> store the total opertaion cost to this state
 #h_n -> store the heuristic cost of this state
 #empty_loc -> store the empty tile location
 class puzzleState:
-    def __init__(self, state, parent, g_n, h_n, empty_loc):
+    def __init__(self, state, g_n, h_n, empty_loc):
         self.state = state
-        self.parent = parent
         self.g_n = g_n
         self.h_n = h_n
         self.empty_loc = empty_loc[:]
