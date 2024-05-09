@@ -1,6 +1,7 @@
 import heapq
 import time
 
+#Command Line Interface
 def main():
     print("Enter the initial state of the puzzle.")
     print("Use 0 to represent empty space.")
@@ -28,16 +29,14 @@ def main():
     start= time.time()
     if choice == '1':
         uniform_cost(complete_puzzle, empty_loc)
-    '''
     if choice == '2':
         misplaced(complete_puzzle, empty_loc)
     if choice == '3':
         manhattan(complete_puzzle, empty_loc)
-    '''
     print("Time: " + str(time.time() - start))
     
     
-    
+
 def uniform_cost(initial, empty_loc):
     initial_state = puzzleState(initial, None, 0, 0, empty_loc)
     min_que = []
@@ -65,7 +64,8 @@ def uniform_cost(initial, empty_loc):
             break
     
         count += 1
-    
+
+        #Expand the legal and non-repeating states
         if current.empty_loc[0] > 0 and (current.parent == None or current.empty_loc[0] - 1 != current.parent.empty_loc[0]):
             heapq.heappush(min_que, puzzleState(move_up(current.state, current.empty_loc), current, current.g_n + 1, 0, move_up_empty(current.empty_loc)))
            
@@ -108,7 +108,8 @@ def misplaced(initial, empty_loc):
             break
         
         count += 1
-    
+
+        #Expand the legal and non-repeating states
         if current.empty_loc[0] > 0 and (current.parent == None or current.empty_loc[0] - 1 != current.parent.empty_loc[0]):
             new_state = move_up(current.state, current.empty_loc)
             heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_up_empty(current.empty_loc)))
@@ -125,7 +126,54 @@ def misplaced(initial, empty_loc):
             new_state = move_right(current.state, current.empty_loc)
             heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_right_empty(current.empty_loc)))
 
+def manhattan(initial, empty_loc):
+    initial_state = puzzleState(initial, None, 0, manhattan_distance(initial), empty_loc)
+    min_que = []
+    heapq.heapify(min_que)
+    heapq.heappush(min_que, initial_state)
     
+    goal = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '0']]
+    
+    count = 0
+    
+    while True:
+        if len(min_que) == 0:
+            break
+        
+        current = heapq.heappop(min_que)
+        
+        print("The puzzle state to be expanded:")
+        print_puzzle(current.state)
+        print("g(n) is " + str(current.g_n))
+        print("h(n) is " + str(current.h_n))
+        print("")
+        
+        if current.state == goal:
+            print("Goal Reached!")
+            print("States expanded: " + str(count))
+            print("Optimal Solution Depth: " + str(current.g_n))
+            break
+        
+        count += 1
+
+        #Expand the legal and non-repeating states
+        if current.empty_loc[0] > 0 and (current.parent == None or current.empty_loc[0] - 1 != current.parent.empty_loc[0]):
+            new_state = move_up(current.state, current.empty_loc)
+            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, manhattan_distance(new_state), move_up_empty(current.empty_loc)))
+           
+        if current.empty_loc[1] > 0 and (current.parent == None or current.empty_loc[1] - 1 != current.parent.empty_loc[1]):
+            new_state = move_left(current.state, current.empty_loc)
+            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, manhattan_distance(new_state), move_left_empty(current.empty_loc)))
+        
+        if current.empty_loc[0] < len(current.state) - 1 and (current.parent == None or current.empty_loc[0] + 1 != current.parent.empty_loc[0]):
+            new_state = move_down(current.state, current.empty_loc)
+            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, manhattan_distance(new_state), move_down_empty(current.empty_loc)))
+            
+        if current.empty_loc[1] < len(current.state[0]) - 1 and (current.parent == None or current.empty_loc[1] + 1 != current.parent.empty_loc[1]):
+            new_state = move_right(current.state, current.empty_loc)
+            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, manhattan_distance(new_state), move_right_empty(current.empty_loc)))
+    
+#Create a new state where empty tile switch with the tile above it
 def move_up(state, empty_loc):
     temp = [row[:] for row in state]
     temp[empty_loc[0]][empty_loc[1]] = temp[empty_loc[0] - 1][empty_loc[1]]
@@ -133,11 +181,13 @@ def move_up(state, empty_loc):
             
     return temp
 
+#Update the location of the empty tile after it moved up
 def move_up_empty(empty_loc):
     new_empty = empty_loc[:]
     new_empty[0] -= 1
     return new_empty
 
+#Create a new state where empty tile switch with the tile to its left
 def move_left(state, empty_loc):
     temp = [row[:] for row in state]
     temp[empty_loc[0]][empty_loc[1]] = temp[empty_loc[0]][empty_loc[1] - 1]
@@ -145,11 +195,13 @@ def move_left(state, empty_loc):
     
     return temp
 
+#Update the location of the empty tile after it moved left
 def move_left_empty(empty_loc):
     new_empty = empty_loc[:]
     new_empty[1] -= 1
     return new_empty
 
+#Create a new state where empty tile switch with the tile below it
 def move_down(state, empty_loc):
     temp = [row[:] for row in state]
     temp[empty_loc[0]][empty_loc[1]] = temp[empty_loc[0] + 1][empty_loc[1]]
@@ -157,11 +209,13 @@ def move_down(state, empty_loc):
     
     return temp
 
+#Update the location of the empty tile after it moved down
 def move_down_empty(empty_loc):
     new_empty = empty_loc[:]
     new_empty[0] += 1
     return new_empty
 
+#Create a new state where empty tile switch with the tile to its right
 def move_right(state, empty_loc):
     temp = state[:]
     temp[empty_loc[0]][empty_loc[1]] = temp[empty_loc[0]][empty_loc[1] + 1]
@@ -169,11 +223,13 @@ def move_right(state, empty_loc):
     
     return temp
 
+#Update the location of the empty tile after it moved right
 def move_right_empty(empty_loc):
     new_empty = empty_loc[:]
     new_empty[1] += 1
     return new_empty
 
+#find the location of the zero.
 def find_zero(puzzle):
     for i in range(len(puzzle)):
         for j in range(len(puzzle[0])):
@@ -182,10 +238,12 @@ def find_zero(puzzle):
     
     return empty_loc
 
+#print the puzzle state in 2d format
 def print_puzzle(puzzle):
     for i in range(len(puzzle)):
         print(puzzle[i])
 
+#calculate the number of misplaced tiles
 def misplaced_count(puzzle):
     count = 0
     goal = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '0']]
@@ -197,6 +255,28 @@ def misplaced_count(puzzle):
     
     return count
 
+#calculate the manhattan distance
+def manhattan_distance(puzzle):
+    count = 0
+    goal = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '0']]
+    for i in range(len(puzzle)):
+        for j in range(len(puzzle[0])):
+            if puzzle[i][j] != '0':
+                if puzzle[i][j]!= goal[i][j]:
+                    row = (int(puzzle[i][j]) - 1) // 3
+                    col = (int(puzzle[i][j]) % 3) - 1
+                    if col == -1:
+                        col = len(puzzle[0]) - 1 
+                    count += abs(row - i) + abs(col - j)
+    
+    return count
+
+#Puzzle state class
+#State -> store the current puzzle
+#parent -> store previous state for non-repeating expansion
+#g_n -> store the total opertaion cost to this state
+#h_n -> store the heuristic cost of this state
+#empty_loc -> store the empty tile location
 class puzzleState:
     def __init__(self, state, parent, g_n, h_n, empty_loc):
         self.state = state
@@ -204,7 +284,8 @@ class puzzleState:
         self.g_n = g_n
         self.h_n = h_n
         self.empty_loc = empty_loc[:]
-        
+    
+    #Compare the sum of g(n) and h(n) for heapq    
     def __lt__(self, other):
         return self.g_n + self.h_n < other.g_n + other.h_n
 
