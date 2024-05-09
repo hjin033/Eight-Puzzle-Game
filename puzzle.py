@@ -79,6 +79,51 @@ def uniform_cost(initial, empty_loc):
             heapq.heappush(min_que, puzzleState(move_right(current.state, current.empty_loc), current, current.g_n + 1, 0, move_right_empty(current.empty_loc)))
     
 
+def misplaced(initial, empty_loc):
+    initial_state = puzzleState(initial, None, 0, misplaced_count(initial), empty_loc)
+    min_que = []
+    heapq.heapify(min_que)
+    heapq.heappush(min_que, initial_state)
+    
+    goal = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '0']]
+    
+    count = 0
+    
+    while True:
+        if len(min_que) == 0:
+            break
+        
+        current = heapq.heappop(min_que)
+        
+        print("The puzzle state to be expanded:")
+        print_puzzle(current.state)
+        print("g(n) is " + str(current.g_n))
+        print("h(n) is " + str(current.h_n))
+        print("")
+        
+        if current.state == goal:
+            print("Goal Reached!")
+            print("States expanded: " + str(count))
+            print("Optimal Solution Depth: " + str(current.g_n))
+            break
+        
+        count += 1
+    
+        if current.empty_loc[0] > 0 and (current.parent == None or current.empty_loc[0] - 1 != current.parent.empty_loc[0]):
+            new_state = move_up(current.state, current.empty_loc)
+            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_up_empty(current.empty_loc)))
+           
+        if current.empty_loc[1] > 0 and (current.parent == None or current.empty_loc[1] - 1 != current.parent.empty_loc[1]):
+            new_state = move_left(current.state, current.empty_loc)
+            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_left_empty(current.empty_loc)))
+        
+        if current.empty_loc[0] < len(current.state) - 1 and (current.parent == None or current.empty_loc[0] + 1 != current.parent.empty_loc[0]):
+            new_state = move_down(current.state, current.empty_loc)
+            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_down_empty(current.empty_loc)))
+            
+        if current.empty_loc[1] < len(current.state[0]) - 1 and (current.parent == None or current.empty_loc[1] + 1 != current.parent.empty_loc[1]):
+            new_state = move_right(current.state, current.empty_loc)
+            heapq.heappush(min_que, puzzleState(new_state[:], current, current.g_n + 1, misplaced_count(new_state), move_right_empty(current.empty_loc)))
 
     
 def move_up(state, empty_loc):
@@ -140,6 +185,17 @@ def find_zero(puzzle):
 def print_puzzle(puzzle):
     for i in range(len(puzzle)):
         print(puzzle[i])
+
+def misplaced_count(puzzle):
+    count = 0
+    goal = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '0']]
+    for i in range(len(puzzle)):
+        for j in range(len(puzzle[0])):
+            if puzzle[i][j] != '0':
+                if puzzle[i][j]!= goal[i][j]:
+                    count += 1
+    
+    return count
 
 class puzzleState:
     def __init__(self, state, parent, g_n, h_n, empty_loc):
